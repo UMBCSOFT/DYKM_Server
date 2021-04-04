@@ -20,4 +20,4 @@ Now we need to setup the run configuration
 
 Now the project can be run by pressing Shift+f10 or by clicking the play button in the top right (or the bug next to it for attaching a debugger)
 
-Once the app is running navegate to `http://localhost:3000/`. You can click the link in the run output box
+Once the app is running navigate to `http://localhost:3000/`. You can click the link in the run output box
