@@ -1,11 +1,11 @@
-const express = require('express')
-const app = express()
-const port = 3000
+const express = require('express');
+const settings = require('./settings')
+const app = express();
+const PORT = process.env.PORT || 1337;
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
+// get all routes in /routes and register them
+require('./routes/routes_index')(app);
 
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
+app.listen(PORT, () => {
+  console.log(`Listening at http://localhost:${PORT}`);
 })

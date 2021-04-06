@@ -1,0 +1,1 @@
+const consoleTestPrints = false;
