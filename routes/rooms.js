@@ -1,3 +1,5 @@
+const { v4: uuidv4 } = require('uuid');
+
 class Room {
     constructor(id) {
         this.id = id;
@@ -14,7 +16,7 @@ module.exports = function(app){
     });
 
     app.post('/create/room', (req, res) => {
-        const id = rooms.length + 1;
+        const id = uuidv4();
         let room = new Room(id);
         rooms.push(room);
         res.send(room);
