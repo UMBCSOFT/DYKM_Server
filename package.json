@@ -1,7 +1,6 @@
 {
   "name": "dynm_server",
   "version": "1.0.0",
-<<<<<<< HEAD
   "description": "Do You Know Me Backend",
   "main": "index.js",
   "scripts": {
@@ -13,18 +12,6 @@
     "url": "git+https://github.com/UMBCSOFT/DYNM_Server.git"
   },
   "author": "Team SOFT",
-=======
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/UMBCSOFT/DYNM_Server.git"
-  },
-  "author": "",
->>>>>>> 4ef00189edb230eb47e78040503f6b2a71d59704
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/UMBCSOFT/DYNM_Server/issues"
@@ -32,11 +19,8 @@
   "homepage": "https://github.com/UMBCSOFT/DYNM_Server#readme",
   "dependencies": {
     "express": "^4.17.1"
-<<<<<<< HEAD
   },
   "devDependencies": {
     "nodemon": "^2.0.7"
-=======
->>>>>>> 4ef00189edb230eb47e78040503f6b2a71d59704
   }
 }
