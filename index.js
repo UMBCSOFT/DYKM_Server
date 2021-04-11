@@ -25,8 +25,8 @@ wss.on('connection', (ws) => {
   ws.send('Hi there. This is a WS server.');
 });
 
-app.listen(process.env.PORT || 1337, () => {
-  console.log(`Listening at http://localhost:${process.env.PORT || 1337}`);
+app.listen(process.env.PORT || PORT, () => {
+  console.log(`Listening at http://localhost:${process.env.PORT || PORT}`);
 })
 // This returns the test page on http://localhost so we can send test requests easily
 app.get('/', function(req, res){
