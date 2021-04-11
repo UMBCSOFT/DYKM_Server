@@ -2,13 +2,14 @@ const express = require('express');
 const settings = require('./settings')
 const app = express();
 const PORT = 1337;
+const WebsocketPort = 4567;
 const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
 
 // create http server and websocket
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ port: PORT })
+const wss = new WebSocket.Server({ port: WebsocketPort })
 
 // get all routes in /routes and register them
 require('./routes/routes_index')(app);

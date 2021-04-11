@@ -57,13 +57,13 @@
             window.socket.onerror = function(error) {
                 log(`[error] ${error.message}`);
             };
-        }
 
-        window.socket.onopen = function(e) {
-            log("[open] Connection established");
-            log("Sending to server");
-            window.socket.send("My name is John");
-        };
+            window.socket.onopen = function(e) {
+                log("[open] Connection established");
+                log("Sending to server");
+                window.socket.send("My name is John");
+            };
+        }
     </script>
 </head>
 <body>
@@ -83,7 +83,7 @@
     <div>
         <span>
             <button onclick="ConnectToWebsocket();">Connect To Websocket</button>
-            <input id="WebsocketValue" type="text" value="ws://localhost:1337"/>
+            <input id="WebsocketValue" type="text" value="ws://localhost:4567"/>
         </span>
     </div>
     <textarea id="LogArea" style="min-width: 500px; min-height: 200px;">
