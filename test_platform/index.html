@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test page</title>
+    <script>
+        function log(x) {
+            document.getElementById("LogArea").textContent += x + "\n";
+        }
+        function CreateRoom() {
+            const Http = new XMLHttpRequest();
+            const url = 'http://localhost:80/room/create';
+            Http.onreadystatechange = function() {
+                if (this.readyState === 4 && this.status === 200) {
+                    let json = JSON.parse(Http.responseText);
+                    document.getElementById("CreateRoomField").value = json["id"];
+                    document.getElementById("JoinRoomField").value = json["id"];
+                    log(Http.responseText);
+                }
+            };
+            Http.open("POST", url);
+            Http.send();
+        }
+
+        function JoinRoom() {
+            let roomId = document.getElementById("JoinRoomField").value
+
+            const Http = new XMLHttpRequest();
+            const url = 'http://localhost:80/room/get/' + roomId;
+            Http.onreadystatechange = function() {
+                if (this.readyState === 4 && this.status === 200) {
+                    log(Http.responseText);
+                }
+            };
+            Http.open("GET", url);
+            Http.send();
+        }
+
+        function ConnectToWebsocket() {
+            let socketIp = document.getElementById("WebsocketValue").value
+            window.socket = new WebSocket(socketIp);
+
+            window.socket.onmessage = function(event) {
+                log(`[message] Data received from server: ${event.data}`);
+            };
+
+            window.socket.onclose = function(event) {
+                if (event.wasClean) {
+                    log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+                } else {
+                    // e.g. server process killed or network down
+                    // event.code is usually 1006 in this case
+                    log('[close] Connection died');
+                }
+            };
+
+            window.socket.onerror = function(error) {
+                log(`[error] ${error.message}`);
+            };
+        }
+
+        window.socket.onopen = function(e) {
+            log("[open] Connection established");
+            log("Sending to server");
+            window.socket.send("My name is John");
+        };
+    </script>
+</head>
+<body>
+    <div>
+        <span>
+            <button onclick="CreateRoom();">Create Room</button>
+            <input id="CreateRoomField" type="text"/>
+        </span>
+    </div>
+    <div>
+        <span>
+            <button onclick="JoinRoom();">Join Room</button>
+            <input id="JoinRoomField" type="text"/>
+        </span>
+    </div>
+
+    <div>
+        <span>
+            <button onclick="ConnectToWebsocket();">Connect To Websocket</button>
+            <input id="WebsocketValue" type="text" value="ws://localhost:1337"/>
+        </span>
+    </div>
+    <textarea id="LogArea" style="min-width: 500px; min-height: 200px;">
+    </textarea>
+</body>
+</html>
