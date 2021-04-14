@@ -1,14 +1,12 @@
 const express = require('express');
 const settings = require('./settings')
 const app = express();
-const PORT = 1337;
-const WebsocketPort = 4567;
 const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
 const Player = require('./player');
 const Connection = require('./connection');
-const updateInterval = 200;
+
 app.heartbeatInterval = 15000; // 15 seconds
 
 function removeItemOnce(arr, value) {
@@ -22,7 +20,7 @@ function removeItemOnce(arr, value) {
 
 // create http server and websocket
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ port: WebsocketPort })
+const wss = new WebSocket.Server({ port: settings.WebsocketPort })
 
 // get all routes in /routes and register them
 require('./routes/routes_index')(app);
@@ -48,8 +46,10 @@ wss.on('connection', (ws) => {
       // Push onto queue for the room update function to read later
       connection.messages.push(message);
     }
-    else if(message.startsWith('JOIN ')) { // Since we're not in a room yet we handle JOIN here, but non JOIN messages should be handled in Room.update()
+    // Since we're not in a room yet we handle JOIN here, but non JOIN messages should be handled in Room.update()
+    else if(message.startsWith('JOIN ')) {
       let roomCode = message.substr("JOIN ".length);
+      message.substr()
       let room = app.rooms.get(roomCode);
       if(room !== undefined) {
         // Remove connection from the unconnected state, and add it as a new player to the room
@@ -57,6 +57,7 @@ wss.on('connection', (ws) => {
         let player = new Player("Player" + (room.players.length + 1));
         player.connection = connection;
         room.players.push(player);
+        player.connection.joinedRoom = true;
         ws.send("WELCOME " + player.nickname);
       }
     }
@@ -66,9 +67,10 @@ wss.on('connection', (ws) => {
   });
 });
 
-app.listen(process.env.PORT || PORT, () => {
-  console.log(`Listening at http://localhost:${process.env.PORT || PORT}`);
-})
+app.listen(process.env.PORT || settings.PORT, () => {
+  console.log(`Listening at http://localhost:${process.env.PORT || settings.PORT}`);
+});
+
 // This returns the test page on http://localhost so we can send test requests easily
 app.get('/', function(req, res){
   res.sendFile( path.join(__dirname + '/test_platform/index.html'));
@@ -76,8 +78,8 @@ app.get('/', function(req, res){
 
 function updateRooms(app) {
   for(let room of app.rooms.values()) {
-    room.update(app, updateInterval);
+    room.update(app, settings.updateInterval);
   }
 }
 
-setInterval(updateRooms, updateInterval, app);
+setInterval(updateRooms, settings.updateInterval, app);

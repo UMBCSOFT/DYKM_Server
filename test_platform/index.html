@@ -3,44 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <title>Test page</title>
-    <script>
+    <script type="text/javascript">
+        const PORT = 1337;
+        const REQ_STATES = {
+            UNSET: 0,
+            OPENED: 1,
+            HEADERS_RECEIVED: 2,
+            LOADING: 3,
+            DONE: 4
+        };
+
         function log(x) {
             document.getElementById("LogArea").textContent += x + "\n";
         }
         function CreateRoom() {
+            log("CreateRoom()");
             const Http = new XMLHttpRequest();
-            const url = 'http://localhost:80/room/create';
+            const url = "http://localhost:".concat(PORT, "/room/create");
+            log("URL: ".concat(url));
             Http.onreadystatechange = function() {
                 if (this.readyState === 4 && this.status === 200) {
                     let json = JSON.parse(Http.responseText);
                     document.getElementById("JoinRoomField").value = json["id"];
                     log(Http.responseText);
+                    log("Join room ID: ".concat(json["id"]));
+                    JoinRoomHost(json["id"]);
                 }
             };
             Http.open("POST", url);
+            log("Opened POST request")
             Http.send();
+            log("Sent post");
+
+            // Have host join the room they created
+            function JoinRoomHost(id) {
+                log("Host joining room with id: ".concat(id));
+                JoinRoom(id);
+            }
         }
 
-        function JoinRoom() {
-            let roomId = document.getElementById("JoinRoomField").value
+        function JoinRoom(id_) {
+            let id;
+            if (id_) {
+                id = id_;
+            }
+            else {
+                id = document.getElementById("JoinRoomField").value
+            }
 
             const Http = new XMLHttpRequest();
-            const url = 'http://localhost:80/room/get/' + roomId;
+            const url = "http://localhost:".concat(PORT, "/room/get/", id);
+            const username = document.getElementById("UserNameField").value;
+
+            log("Joining room with url: ".concat('\n', url));
             Http.onreadystatechange = function() {
-                if (this.readyState === 4) {
+                if (this.readyState === REQ_STATES.DONE) {
                     if(this.status === 200) {
-                        ConnectToWebsocket(Http.responseText);
+                        ConnectToWebsocket(Http.responseText, id, username);
                     }
                     else {
-                        log("ERROR: " + Http.responseText);
+                        log("ERROR ".concat(this.status, ": ") + Http.responseText);
                     }
                 }
             };
             Http.open("GET", url);
             Http.send();
+
+            log("Sent GET to url: ".concat(url));
         }
 
-        function ConnectToWebsocket(url) {
+        function SetUserName(socket) {
+            const userName = document.getElementById("UserNameField").value;
+
+            if (userName.length > 0) {
+                socket.send("CHANGENICK ".concat(userName));
+            }
+        }
+
+        function ConnectToWebsocket(url, id, username_ = "") {
             //<input id="WebsocketValue" type="text" value="ws://localhost:4567"/>
             window.socket = new WebSocket(url);
 
@@ -54,6 +94,10 @@
                 }
                 if(event.data === "PONG ACK") {
                     log("Received PONG acknowledgement");
+                }
+
+                if(event.data.toString().startsWith("WELCOME ")) {
+                    SetUserName(window.socket);
                 }
             };
 
@@ -72,24 +116,31 @@
             };
 
             window.socket.onopen = function(e) {
-                let roomId = document.getElementById("JoinRoomField").value
                 log("[open] Connection established");
-                log(`Attempting to join room ${roomId}`);
-                window.socket.send("JOIN " + roomId);
+                log(`Attempting to join room ${id}`);
+                window.socket.send("JOIN " + id);
             };
         }
+
     </script>
 </head>
 <body>
     <div>
         <span>
-            <button onclick="CreateRoom();">Create Room</button>
+            Username:
+            <input id="UserNameField" type="text"/>
         </span>
     </div>
     <div>
         <span>
-            <button onclick="JoinRoom();">Join Room</button>
+            Room Code (if joining):
             <input id="JoinRoomField" type="text"/>
+        </span>
+    </div>
+    <div>
+        <span>
+            <button onclick="CreateRoom();">Create Room</button>
+            <button onclick="JoinRoom();">Join Room</button>
         </span>
     </div>
     <textarea id="LogArea" style="min-width: 500px; min-height: 200px;">
