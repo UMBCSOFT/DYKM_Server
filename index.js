@@ -10,6 +10,7 @@ const Player = require('./player');
 const Connection = require('./connection');
 const updateInterval = 200;
 app.heartbeatInterval = 15000; // 15 seconds
+app.websocketPort = WebsocketPort;
 
 function removeItemOnce(arr, value) {
   var index = arr.indexOf(value);
@@ -36,6 +37,19 @@ let connectedButNotInRoom = [];
 wss.on('connection', (ws) => {
   let connection = new Connection(ws);
   connectedButNotInRoom.push(connection);
+  ws.on('close', () => {
+    removeItemOnce(connectedButNotInRoom, connection); // This will not do anything if it's not in this list, otherwise it removes
+    if(connection.room !== undefined) {
+      // Find the player in this room with this connection
+      let playerIndex = connection.room.players.findIndex(p => p.connection === connection);
+
+      let player = connection.room.players[playerIndex];
+      console.log(`Removed player ${player.nickname} from room ${connection.room.id}`);
+
+      // Remove that player from the room
+      connection.room.players.splice(playerIndex,1);
+    }
+  });
   ws.on('message', (message) => {
     if(message === "PONG")
     {
@@ -58,6 +72,8 @@ wss.on('connection', (ws) => {
         player.connection = connection;
         room.players.push(player);
         ws.send("WELCOME " + player.nickname);
+        connection.room = room;
+        console.log(`Added player ${player.nickname} to room ${room.id}`);
       }
     }
     else {
