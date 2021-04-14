@@ -61,7 +61,8 @@
             window.socket.onopen = function(e) {
                 log("[open] Connection established");
                 log("Sending to server");
-                window.socket.send("My name is John");
+                let roomId = document.getElementById("JoinRoomField").value
+                window.socket.send("JOIN " + roomId);
             };
         }
     </script>
