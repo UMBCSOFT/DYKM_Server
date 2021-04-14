@@ -10,7 +10,8 @@ module.exports = function(app){
             res.status(500).send(`No such room exists with id ${req.params.id}`);
             return;
         }
-        res.send(room);
+        // Respond with what IP the client should connect to
+        res.send("ws://localhost:4567"); // TODO: Once released this needs to return the IP of our live server
     });
 
     app.post('/room/create', (req, res) => {

@@ -8,6 +8,8 @@ const WebSocket = require('ws');
 const path = require('path');
 const Player = require('./player');
 const Connection = require('./connection');
+const updateInterval = 200;
+app.heartbeatInterval = 15000; // 15 seconds
 
 function removeItemOnce(arr, value) {
   var index = arr.indexOf(value);
@@ -38,6 +40,7 @@ wss.on('connection', (ws) => {
     if(message === "PONG")
     {
       ws.send("PONG ACK");
+      console.log("Replying to PONG");
       return;
     }
 
@@ -61,7 +64,6 @@ wss.on('connection', (ws) => {
       throw new Error(`Haven't joined room a yet but received a non JOIN message "${message}"\nA join message must be sent before sending other websocket messages`)
     }
   });
-  ws.send(`Connection received. Waiting for JOIN message...`);
 });
 
 app.listen(process.env.PORT || PORT, () => {
@@ -74,8 +76,8 @@ app.get('/', function(req, res){
 
 function updateRooms(app) {
   for(let room of app.rooms.values()) {
-    room.update(app);
+    room.update(app, updateInterval);
   }
 }
 
-setInterval(updateRooms, 200, app);
+setInterval(updateRooms, updateInterval, app);

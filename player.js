@@ -1,6 +1,7 @@
 class Player {
     constructor(nickname) {
         this.nickname = nickname;
+        this.connection = undefined; // Connection will be set once JOIN message is recieved
     }
 
     // The player is given a default nickname at the start, and they can change it before the game starts

@@ -13,7 +13,6 @@
             Http.onreadystatechange = function() {
                 if (this.readyState === 4 && this.status === 200) {
                     let json = JSON.parse(Http.responseText);
-                    document.getElementById("CreateRoomField").value = json["id"];
                     document.getElementById("JoinRoomField").value = json["id"];
                     log(Http.responseText);
                 }
@@ -28,20 +27,34 @@
             const Http = new XMLHttpRequest();
             const url = 'http://localhost:80/room/get/' + roomId;
             Http.onreadystatechange = function() {
-                if (this.readyState === 4 && this.status === 200) {
-                    log(Http.responseText);
+                if (this.readyState === 4) {
+                    if(this.status === 200) {
+                        ConnectToWebsocket(Http.responseText);
+                    }
+                    else {
+                        log("ERROR: " + Http.responseText);
+                    }
                 }
             };
             Http.open("GET", url);
             Http.send();
         }
 
-        function ConnectToWebsocket() {
-            let socketIp = document.getElementById("WebsocketValue").value
-            window.socket = new WebSocket(socketIp);
+        function ConnectToWebsocket(url) {
+            //<input id="WebsocketValue" type="text" value="ws://localhost:4567"/>
+            window.socket = new WebSocket(url);
 
             window.socket.onmessage = function(event) {
                 log(`[message] Data received from server: ${event.data}`);
+
+                // Respond to heartbeats
+                if(event.data === "PING") {
+                    window.socket.send("PONG");
+                    log("Received PING. Replying with PONG");
+                }
+                if(event.data === "PONG ACK") {
+                    log("Received PONG acknowledgement");
+                }
             };
 
             window.socket.onclose = function(event) {
@@ -59,9 +72,9 @@
             };
 
             window.socket.onopen = function(e) {
-                log("[open] Connection established");
-                log("Sending to server");
                 let roomId = document.getElementById("JoinRoomField").value
+                log("[open] Connection established");
+                log(`Attempting to join room ${roomId}`);
                 window.socket.send("JOIN " + roomId);
             };
         }
@@ -71,20 +84,12 @@
     <div>
         <span>
             <button onclick="CreateRoom();">Create Room</button>
-            <input id="CreateRoomField" type="text"/>
         </span>
     </div>
     <div>
         <span>
             <button onclick="JoinRoom();">Join Room</button>
             <input id="JoinRoomField" type="text"/>
-        </span>
-    </div>
-
-    <div>
-        <span>
-            <button onclick="ConnectToWebsocket();">Connect To Websocket</button>
-            <input id="WebsocketValue" type="text" value="ws://localhost:4567"/>
         </span>
     </div>
     <textarea id="LogArea" style="min-width: 500px; min-height: 200px;">
