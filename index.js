@@ -48,7 +48,7 @@ wss.on('connection', (ws) => {
       // Push onto queue for the room update function to read later
       connection.messages.push(message);
     }
-    else if(message.startsWith('JOIN ')) {
+    else if(message.startsWith('JOIN ')) { // Since we're not in a room yet we handle JOIN here, but non JOIN messages should be handled in Room.update()
       let roomCode = message.substr("JOIN ".length);
       let room = app.rooms.get(roomCode);
       if(room !== undefined) {
