@@ -29,7 +29,6 @@ class Room {
                 if(message.startsWith("CHANGENICK")) {
                     const nickname = message.substr("CHANGENICK ".length);
                     player.nickname = nickname;
-                    player.connection.ws.send("CHANGENICK ACK ".concat(nickname));
                 }
             }
         }
