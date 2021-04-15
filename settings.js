@@ -1,5 +1,5 @@
 const settings = {
-    PORT: process.env.PORT || 80,
+    PORT: 1337,
     consoleTestPrints: false,
     WebsocketPort: 4567,
     updateInterval: 200
