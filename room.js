@@ -8,11 +8,10 @@ class Room {
         this.state = initialState;
     }
 
-    //todo: timePasted? why Pasted?
-    update(app, timePasted) {
+    update(app, timePassed) {
         for(let player of this.players) {
             // Heartbeat if enough time has passed
-            player.connection.timeSinceLastHeartbeatSent += timePasted;
+            player.connection.timeSinceLastHeartbeatSent += timePassed;
             if(player.connection.timeSinceLastHeartbeatSent > app.heartbeatInterval) {
                 player.connection.timeSinceLastHeartbeatSent -= app.heartbeatInterval;
                 player.connection.ws.send("PING");
