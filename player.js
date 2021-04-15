@@ -1,11 +1,13 @@
 class Player {
-    constructor(nickname) {
+    constructor(nickname, isHost=false) {
         this.nickname = nickname;
+        this.isHost = isHost
         this.connection = undefined; // Connection will be set once JOIN message is recieved
     }
 
     // The player is given a default nickname at the start, and they can change it before the game starts
-    changeNickname(nicknamne) {
+    //TODO: Delete?
+    changeNickname(nickname) {
         //TODO: Make sure this isn't called outside of the game lobby screen. We don't want people changing nicknames mid game
         this.nickname = nickname;
     }

@@ -1,7 +1,11 @@
+const GameStates = require("./enums/e_game_states");
+
 class Room {
-    constructor(id) {
+    constructor(id, host = "None", initialState = GameStates.GAME_READY) {
         this.id = id;
         this.players = [];
+        this.host = host;
+        this.state = initialState;
     }
 
     //todo: timePasted? why Pasted?
@@ -20,8 +24,9 @@ class Room {
 
                 const message = player.connection.messages.shift(); // Pull the oldest message off the message queue
                 console.log("Received message: ".concat(message));
-                // TODO: Handle game messages here
-                //if(message.startsWith("..."))
+
+                // Handle game messages here
+                //e.g. if(message.startsWith("..."))
                 if(message.startsWith("CHANGENICK")) {
                     const nickname = message.substr("CHANGENICK ".length);
                     player.nickname = nickname;

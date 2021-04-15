@@ -58,6 +58,10 @@ wss.on('connection', (ws) => {
         player.connection = connection;
         room.players.push(player);
         player.connection.joinedRoom = true;
+        if (player.nickname === "Player1") {
+          room.host = player;
+          console.log("Set host: " + player.nickname)
+        }
         ws.send("WELCOME " + player.nickname);
       }
     }
