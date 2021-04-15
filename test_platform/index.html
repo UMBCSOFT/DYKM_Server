@@ -81,6 +81,9 @@
         }
 
         function ConnectToWebsocket(url, id, username_ = "") {
+            if(window.socket !== undefined) {
+                window.socket.close();
+            }
             //<input id="WebsocketValue" type="text" value="ws://localhost:4567"/>
             window.socket = new WebSocket(url);
 
