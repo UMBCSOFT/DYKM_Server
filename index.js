@@ -8,7 +8,7 @@ const Player = require('./player');
 const Connection = require('./connection');
 
 app.heartbeatInterval = 15000; // 15 seconds
-app.websocketPort = WebsocketPort;
+app.websocketPort = settings.WebsocketPort;
 
 function removeItemOnce(arr, value) {
   var index = arr.indexOf(value);
@@ -87,8 +87,8 @@ wss.on('connection', (ws) => {
   });
 });
 
-app.listen(process.env.PORT || settings.PORT, () => {
-  console.log(`Listening at http://localhost:${process.env.PORT || settings.PORT}`);
+app.listen(settings.PORT, () => {
+  console.log(`Listening at http://localhost:${settings.PORT}`);
 });
 
 // This returns the test page on http://localhost so we can send test requests easily
