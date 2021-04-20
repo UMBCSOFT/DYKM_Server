@@ -1,9 +1,11 @@
 # DYNM_Server
 
+
+
 # Running
 1. Run `npm install` to get all the node module dependencies
 2. Run `node index.js` to start the server
-3. Go to `http://localhost:3000` on your browser to interact with the application
+3. Go to `http://localhost:1337` on your browser to interact with the application using the test html page
 
 # Configuring WebStorm
 1. From the "Welcome to WebStorm page" select `Get from VSC`
@@ -20,4 +22,4 @@ Now we need to setup the run configuration
 
 Now the project can be run by pressing Shift+f10 or by clicking the play button in the top right (or the bug next to it for attaching a debugger)
 
-Once the app is running navigate to `http://localhost:3000/`. You can click the link in the run output box
+Once the app is running navigate to `http://localhost:1337/`. You can click the link in the run output box
