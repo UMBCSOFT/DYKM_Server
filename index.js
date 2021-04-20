@@ -6,12 +6,14 @@ const WebSocket = require('ws');
 const path = require('path');
 const Player = require('./player');
 const Connection = require('./connection');
+const cors = require('cors');
 
 app.heartbeatInterval = 15000; // 15 seconds
 app.websocketPort = settings.WebsocketPort;
+app.use(cors())
 
 function removeItemOnce(arr, value) {
-  var index = arr.indexOf(value);
+  let index = arr.indexOf(value);
   if (index > -1) {
     arr.splice(index, 1);
   }
