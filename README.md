@@ -1,5 +1,5 @@
 # DYNM_Server
-<i>Do You Know Me?</i> is an online multiplayer party game for a group of friends. Everyone in the game is given a question that they must answer. Everyone gets the same question. Then, everyone receives the answers from the other players, and they are tasked with trying to figure out who wrote each answer. It's a game that answers the question... <i>Do You Know Me?</i>
+<i>Do You Know Me?</i> is an online multiplayer party game for a group of friends. Everyone in the game is given the same question. Then, everyone receives the answers from the other players, and they are tasked with trying to figure out who wrote each answer. It's a game that answers the question... <i>Do You Know Me?</i>
 
 This is the back-end server for the game. It is written in ExpressJS and uses WebSockets to facilitate gameplay.
 
