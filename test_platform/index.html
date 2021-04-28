@@ -118,7 +118,7 @@
                 log(`[error] ${error.message}`);
             };
 
-            window.socket.onopen = function(e) {
+            window.socket.onopen = function() {
                 log("[open] Connection established");
                 log(`Attempting to join room ${id}`);
                 window.socket.send("JOIN " + id);

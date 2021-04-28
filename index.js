@@ -79,6 +79,7 @@ wss.on('connection', (ws) => {
           console.log("Set host: " + player.nickname)
         }
         ws.send("WELCOME " + player.nickname);
+        ws.send("ID " + player.id);
         connection.room = room;
         console.log(`Added player ${player.nickname} to room ${room.id}`);
       }
