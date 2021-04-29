@@ -7,6 +7,7 @@ const path = require('path');
 const Player = require('./player');
 const Connection = require('./connection');
 const cors = require('cors');
+app.use(cors());
 
 app.heartbeatInterval = 15000; // 15 seconds
 app.websocketPort = settings.WebsocketPort;

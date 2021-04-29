@@ -28,6 +28,7 @@ class Room {
                 //e.g. if(message.startsWith("..."))
                 if(message.startsWith("CHANGENICK")) {
                     const nickname = message.substr("CHANGENICK ".length);
+                    console.log("Changing nickname of player " + player.nickname + " to " + nickname)
                     player.nickname = nickname;
                 }
             }
