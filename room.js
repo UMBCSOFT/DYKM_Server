@@ -14,7 +14,7 @@ class Room {
 
     notifyEveryoneOfPlayerChange() {
         for(let player of this.players) {
-            player.connection.ws.send("PLAYERUPDATE " + this.players.join(";")); // TODO: People can put a semicolon in their name and break this
+            player.connection.ws.send("PLAYERUPDATE " + this.players.map(x=>x.name).join(";")); // TODO: People can put a semicolon in their name and break this
         }
     }
 
