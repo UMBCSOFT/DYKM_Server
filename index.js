@@ -66,7 +66,6 @@ wss.on('connection', (ws) => {
     // Since we're not in a room yet we handle JOIN here, but non JOIN messages should be handled in Room.update()
     else if(message.startsWith('JOIN ')) {
       let roomCode = message.substr("JOIN ".length);
-      message.substr()
       let room = app.rooms.get(roomCode);
       if(room !== undefined) {
         // Remove connection from the unconnected state, and add it as a new player to the room
@@ -74,6 +73,7 @@ wss.on('connection', (ws) => {
         let player = new Player("Player" + (room.players.length + 1));
         player.connection = connection;
         room.players.push(player);
+        room.notifyEveryoneOfPlayerChange();
         player.connection.joinedRoom = true;
         if (player.nickname === "Player1") {
           room.host = player;

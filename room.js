@@ -8,6 +8,16 @@ class Room {
         this.state = initialState;
     }
 
+    getQuestion() {
+        return "THIS IS A TEST QUESTION";
+    }
+
+    notifyEveryoneOfPlayerChange() {
+        for(let player of this.players) {
+            player.connection.ws.send("PLAYERUPDATE " + this.players.join(";")); // TODO: People can put a semicolon in their name and break this
+        }
+    }
+
     update(app, timePassed) {
         for(let player of this.players) {
             // Heartbeat if enough time has passed
@@ -30,6 +40,11 @@ class Room {
                     const nickname = message.substr("CHANGENICK ".length);
                     console.log("Changing nickname of player " + player.nickname + " to " + nickname)
                     player.nickname = nickname;
+                }
+                else if(message.startsWith("START GAME")) {
+                    for(let p of this.players) {
+                        p.connection.ws.send("TRANSITION QUESTION " + this.getQuestion());
+                    }
                 }
             }
         }
