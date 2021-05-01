@@ -49,6 +49,7 @@ wss.on('connection', (ws) => {
 
       // Remove that player from the room
       connection.room.players.splice(playerIndex,1);
+      connection.room.notifyEveryoneOfPlayerChange();
     }
   });
   ws.on('message', (message) => {
