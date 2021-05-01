@@ -14,7 +14,7 @@ class Room {
 
     notifyEveryoneOfPlayerChange() {
         for(let player of this.players) {
-            player.connection.ws.send("PLAYERUPDATE " + this.players.map(x=>x.name).join(";")); // TODO: People can put a semicolon in their name and break this
+            player.connection.ws.send("PLAYERUPDATE " + this.players.map(x=>x.nickname).join(";")); // TODO: People can put a semicolon in their name and break this
         }
     }
 
@@ -40,6 +40,7 @@ class Room {
                     const nickname = message.substr("CHANGENICK ".length);
                     console.log("Changing nickname of player " + player.nickname + " to " + nickname)
                     player.nickname = nickname;
+                    this.notifyEveryoneOfPlayerChange();
                 }
                 else if(message.startsWith("START GAME")) {
                     for(let p of this.players) {
