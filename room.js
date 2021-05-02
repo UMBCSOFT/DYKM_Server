@@ -6,6 +6,7 @@ class Room {
         this.players = [];
         this.host = host;
         this.state = initialState;
+        this.numRounds = 1;
     }
 
     getQuestion() {
@@ -46,6 +47,14 @@ class Room {
                     for(let p of this.players) {
                         p.connection.ws.send("TRANSITION QUESTION " + this.getQuestion());
                     }
+                }
+                else if(message.startsWith("SETNUMROUNDS ")) {
+                    let rest = message.substr("SETNUMROUNDS ".length);
+                    this.numRounds = parseInt(rest);
+                    console.log("Setting number of rounds to " + rest);
+                }
+                else {
+                    console.log("Unhandled message " + message);
                 }
             }
         }
