@@ -1,4 +1,5 @@
 const GameStates = require("./enums/e_game_states");
+const sqlite3 = require('sqlite3').verbose();
 
 class Room {
     constructor(id, host = "None", initialState = GameStates.GAME_READY) {
@@ -7,10 +8,51 @@ class Room {
         this.host = host;
         this.state = initialState;
         this.numRounds = 1;
+        this.validGamePacks = ["doyouknowme", "icebreakers"];
+        this.gamePack = this.validGamePacks[0];
+        this.questions = [];
     }
 
     getQuestion() {
-        return "THIS IS A TEST QUESTION";
+        if(this.questions.length <= 0) {
+            return "ERROR: Ran out of questions or failed to load question pack";
+        }
+        return this.questions.splice(Math.floor(Math.random()*this.questions.length), 1)[0]; // Grab a single question and remove it from the array
+    }
+
+    loadQuestions(callbackWhenDone) {
+        if(this.validGamePacks.indexOf(this.gamePack) < 0) { console.error("Attempted to use load gamepack " + this.gamePack + " but this is not a valid gamepack"); return;} // Don't allow invalid game packs
+
+        let filename = './database/' + this.gamePack + '.db';
+        let db = new sqlite3.Database(filename, (err) => {
+            if (err) {
+                return console.error(err.message);
+            }
+            console.log("Loaded " + filename);
+        });
+        db.serialize(() => {
+            this.questions = [];
+            db.all(`SELECT question from questions`, (err, rows) => {
+                if (err) {
+                    console.error(err.message);
+                }
+                this.questions = rows.map(x=>x.question);
+                console.log("Loaded " + this.questions.length + " questions from " + filename);
+                db.close();
+                if(callbackWhenDone)
+                    callbackWhenDone();
+            });
+
+        });
+
+    }
+
+    startGame() {
+        let question = this.getQuestion();
+        for(let p of this.players) {
+            p.connection.ws.send("TRANSITION QUESTION " + question);
+        }
+        console.log("Starting game with " + this.numRounds + " rounds and question pack " + this.gamePack);
     }
 
     notifyEveryoneOfPlayerChange() {
@@ -44,14 +86,22 @@ class Room {
                     this.notifyEveryoneOfPlayerChange();
                 }
                 else if(message.startsWith("START GAME")) {
-                    for(let p of this.players) {
-                        p.connection.ws.send("TRANSITION QUESTION " + this.getQuestion());
-                    }
+                    this.loadQuestions(()=>this.startGame());
                 }
                 else if(message.startsWith("SETNUMROUNDS ")) {
                     let rest = message.substr("SETNUMROUNDS ".length);
                     this.numRounds = parseInt(rest);
                     console.log("Setting number of rounds to " + rest);
+                }
+                else if(message.startsWith("SETGAMEPACK ")) {
+                    let rest = message.substr("SETGAMEPACK ".length);
+                    if(this.validGamePacks.indexOf(rest) >= 0) {
+                        console.log("Setting game pack to " + rest);
+                        this.gamePack = rest;
+                    }
+                    else {
+                        console.log("Invalid game pack name " + rest);
+                    }
                 }
                 else {
                     console.log("Unhandled message " + message);
