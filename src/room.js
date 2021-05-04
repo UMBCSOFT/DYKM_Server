@@ -64,17 +64,8 @@ class Room {
     }
 
     startGame() {
-        for(let player of this.players) {
-            player.answer = undefined;
-            player.doneMatching = false;
-            player.matches = [];
-        }
-        let question = this.getQuestion();
-        this.state = GameStates.GAME_QUESTION;
-        this.setupTimer(questionPhaseTimeSeconds);
-        this.broadcast("TRANSITION QUESTION " + question);
+        this.TransitionQuestion();
         console.log("Starting game with " + this.numRounds + " rounds and question pack " + this.gamePack);
-        console.log("Setting timer start to " + this.timerStart + " and end to " + this.timerEnd + " which is " + ((this.timerEnd - this.timerStart)/1000.0) + " seconds")
     }
 
     notifyEveryoneOfPlayerChange() {
@@ -123,17 +114,32 @@ class Room {
         this.state = GameStates.GAME_QUESTIONMATCH;
     }
 
-    TransitionQuestion() {
+    TransitionQuestionFromScores() {
         for (let player of this.players) {
             if(player.readyNextRound === false) {
+                console.log(player.nickname + "was not ready for the next round");
                 return;
             }
         }
+        console.log("All players are ready for next round");
 
         for (let player of this.players) {
             player.readyNextRound = false;
         }
-        this.broadcast("TRANSITION QUESTION");
+
+        this.TransitionQuestion();
+    }
+
+    TransitionQuestion() {
+        for(let player of this.players) {
+            player.answer = undefined;
+            player.doneMatching = false;
+            player.matches = [];
+        }
+        let question = this.getQuestion();
+        this.broadcast("TRANSITION QUESTION " + question);
+        this.setupTimer(questionPhaseTimeSeconds);
+        console.log("Setting timer start to " + this.timerStart + " and end to " + this.timerEnd + " which is " + ((this.timerEnd - this.timerStart)/1000.0) + " seconds")
         this.state = GameStates.GAME_QUESTION;
     }
 
@@ -200,8 +206,10 @@ class Room {
                     player.connection.ws.send(
                         "ISLASTROUND " + (this.numRounds === 0).toString().toUpperCase());
                 }
-                else if (message === "READYNEXTROUND") {
+                else if (message.startsWith("READYNEXTROUND")) {
+                    console.log(player.nickname + " is ready for next round");
                     player.readyNextRound = true;
+                    this.TransitionQuestionFromScores();
                 }
                 else if (message.startsWith("DONEMATCHING ")) {
                     let rest = message.substr("DONEMATCHING ".length);
