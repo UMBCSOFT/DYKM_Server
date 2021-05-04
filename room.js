@@ -1,6 +1,9 @@
 const GameStates = require("./enums/e_game_states");
 const sqlite3 = require('sqlite3').verbose();
 
+const questionPhaseTimeSeconds = 60;
+const questionMatchTimeSeconds = 60;
+
 class Room {
     constructor(id, host = "None", initialState = GameStates.GAME_READY) {
         this.id = id;
@@ -11,6 +14,8 @@ class Room {
         this.validGamePacks = ["doyouknowme", "icebreakers"];
         this.gamePack = this.validGamePacks[0];
         this.questions = [];
+        this.timerStart = 0;
+        this.timerEnd = 0;
     }
 
     getQuestion() {
@@ -53,10 +58,22 @@ class Room {
         }
     }
 
+    setupTimer(howLongInSeconds) {
+        this.timerStart = new Date().getTime();
+        this.timerEnd = this.timerStart + howLongInSeconds * 1000;
+    }
+
     startGame() {
+        this.numRounds -= 1;
+        for(let player of this.players) {
+            player.answer = undefined;
+        }
         let question = this.getQuestion();
+        this.state = GameStates.GAME_QUESTION;
+        this.setupTimer(questionPhaseTimeSeconds);
         this.broadcast("TRANSITION QUESTION " + question);
         console.log("Starting game with " + this.numRounds + " rounds and question pack " + this.gamePack);
+        console.log("Setting timer start to " + this.timerStart + " and end to " + this.timerEnd + " which is " + ((this.timerEnd - this.timerStart)/1000.0) + " seconds")
     }
 
     notifyEveryoneOfPlayerChange() {
@@ -71,11 +88,23 @@ class Room {
                 return;
         }
         // If we got here that means everyone has an answer
+        this.TransitionQuestionMatch();
+    }
+
+    TransitionQuestionMatch() {
+        // If we got here that means everyone has an answer
+        for (let player of this.players) {
+            if(player.answer === undefined) {
+                player.answer = "No answer given";
+            }
+        }
         let nameAnswerPairs = this.players.map(x=>x.nickname + ";" + x.answer + ";");
         // nameAnswerPairs will be a string of tuples of nicknames and answers
         // like "player1;player1answer;player2;player2answer"
         // Then the client will split by ; and grab 2 at a time and make them into pairs again
+        this.setupTimer(questionMatchTimeSeconds);
         this.broadcast("TRANSITION QUESTIONMATCH " + nameAnswerPairs);
+        this.state = GameStates.GAME_QUESTIONMATCH;
     }
 
     update(app, timePassed) {
@@ -126,9 +155,19 @@ class Room {
                     console.log("Setting player " + player.nickname + "'s answer to " + player.answer);
                     this.checkIfEveryoneAnsweredAndTransitionIfTheyHave();
                 }
+                else if (message.startsWith("REQUESTTIMER")) {
+                    console.log("Sending timer data to " + player.nickname);
+                    player.connection.ws.send("TIMER " + this.timerStart + ";" + this.timerEnd);
+                }
                 else {
                     console.log("Unhandled message " + message);
                 }
+            }
+        }
+
+        if(this.state === GameStates.GAME_QUESTION) {
+            if((this.timerEnd - new Date().getTime()) <= 0) {
+                this.TransitionQuestionMatch();
             }
         }
     }
