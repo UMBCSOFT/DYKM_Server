@@ -167,6 +167,9 @@ class Room {
                 }
                 else if (message.startsWith("ANSWER ")) {
                     let rest = message.substr("ANSWER ".length);
+                    if(rest === "null" || rest === "undefined") {
+                        rest = "No answer given";
+                    }
                     player.answer = rest;
                     console.log("Setting player " + player.nickname + "'s answer to " + player.answer);
                     this.checkIfEveryoneAnsweredAndTransitionIfTheyHave();
