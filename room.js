@@ -47,11 +47,15 @@ class Room {
 
     }
 
+    broadcast(broadcastMessage) {
+        for(let p of this.players) {
+            p.connection.ws.send(broadcastMessage);
+        }
+    }
+
     startGame() {
         let question = this.getQuestion();
-        for(let p of this.players) {
-            p.connection.ws.send("TRANSITION QUESTION " + question);
-        }
+        this.broadcast("TRANSITION QUESTION " + question);
         console.log("Starting game with " + this.numRounds + " rounds and question pack " + this.gamePack);
     }
 
@@ -59,6 +63,19 @@ class Room {
         for(let player of this.players) {
             player.connection.ws.send("PLAYERUPDATE " + this.players.map(x=>x.nickname).join(";")); // TODO: People can put a semicolon in their name and break this
         }
+    }
+
+    checkIfEveryoneAnsweredAndTransitionIfTheyHave() { // Long but descriptive :shrug:
+        for(let player of this.players) {
+            if(player.answer === undefined)
+                return;
+        }
+        // If we got here that means everyone has an answer
+        let nameAnswerPairs = this.players.map(x=>x.nickname + ";" + x.answer + ";");
+        // nameAnswerPairs will be a string of tuples of nicknames and answers
+        // like "player1;player1answer;player2;player2answer"
+        // Then the client will split by ; and grab 2 at a time and make them into pairs again
+        this.broadcast("TRANSITION QUESTIONMATCH " + nameAnswerPairs);
     }
 
     update(app, timePassed) {
@@ -102,6 +119,12 @@ class Room {
                     else {
                         console.log("Invalid game pack name " + rest);
                     }
+                }
+                else if (message.startsWith("ANSWER ")) {
+                    let rest = message.substr("ANSWER ".length);
+                    player.answer = rest;
+                    console.log("Setting player " + player.nickname + "'s answer to " + player.answer);
+                    this.checkIfEveryoneAnsweredAndTransitionIfTheyHave();
                 }
                 else {
                     console.log("Unhandled message " + message);

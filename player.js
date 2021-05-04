@@ -6,6 +6,7 @@ class Player {
         this.isHost = isHost
         this.connection = undefined; // Connection will be set once JOIN message is recieved
         this.id = uuidv4();
+        this.answer = undefined;
     }
 
     // The player is given a default nickname at the start, and they can change it before the game starts
