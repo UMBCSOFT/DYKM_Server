@@ -103,6 +103,7 @@ class Room {
     }
 
     TransitionScore() {
+        this.state = GameStates.GAME_ROUND_END;
         this.broadcast("TRANSITION SCORE"); // The client will send their matches once they hear this
     }
 
@@ -143,7 +144,7 @@ class Room {
                 if(message.startsWith("CHANGENICK")) {
                     const nickname = message.substr("CHANGENICK ".length);
                     console.log("Changing nickname of player " + player.nickname + " to " + nickname)
-                    player.nickname = nickname;
+                    player.setNickname(nickname);
                     this.notifyEveryoneOfPlayerChange();
                 }
                 else if(message.startsWith("START GAME")) {
@@ -174,7 +175,9 @@ class Room {
                     console.log("Sending timer data to " + player.nickname);
                     player.connection.ws.send("TIMER " + this.timerStart + ";" + this.timerEnd);
                 }
-                else if (message.startsWith("DONEMATCHING")) {
+                else if (message.startsWith("DONEMATCHING ")) {
+                    let rest = message.substr("DONEMATCHING ".length);
+                    //TODO: split into match pairs
                     console.log(player.nickname + " is done matching");
                     player.doneMatching = true;
                     this.checkIfEveryoneIsDoneMatchingAndTransitionIfTheyHave();
