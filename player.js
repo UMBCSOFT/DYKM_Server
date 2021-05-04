@@ -7,13 +7,8 @@ class Player {
         this.connection = undefined; // Connection will be set once JOIN message is recieved
         this.id = uuidv4();
         this.answer = undefined;
-    }
-
-    // The player is given a default nickname at the start, and they can change it before the game starts
-    //TODO: Delete?
-    changeNickname(nickname) {
-        //TODO: Make sure this isn't called outside of the game lobby screen. We don't want people changing nicknames mid game
-        this.nickname = nickname;
+        this.doneMatching = false;
+        this.matches = [];
     }
 }
 

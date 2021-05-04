@@ -67,6 +67,8 @@ class Room {
         this.numRounds -= 1;
         for(let player of this.players) {
             player.answer = undefined;
+            player.doneMatching = false;
+            player.matches = [];
         }
         let question = this.getQuestion();
         this.state = GameStates.GAME_QUESTION;
@@ -89,6 +91,19 @@ class Room {
         }
         // If we got here that means everyone has an answer
         this.TransitionQuestionMatch();
+    }
+
+    checkIfEveryoneIsDoneMatchingAndTransitionIfTheyHave() {
+        for(let player of this.players) {
+            if(!player.doneMatching)
+                return;
+        }
+        // If we got here that means everyone has matched
+        this.TransitionScore();
+    }
+
+    TransitionScore() {
+        this.broadcast("TRANSITION SCORE"); // The client will send their matches once they hear this
     }
 
     TransitionQuestionMatch() {
@@ -159,6 +174,11 @@ class Room {
                     console.log("Sending timer data to " + player.nickname);
                     player.connection.ws.send("TIMER " + this.timerStart + ";" + this.timerEnd);
                 }
+                else if (message.startsWith("DONEMATCHING")) {
+                    console.log(player.nickname + " is done matching");
+                    player.doneMatching = true;
+                    this.checkIfEveryoneIsDoneMatchingAndTransitionIfTheyHave();
+                }
                 else {
                     console.log("Unhandled message " + message);
                 }
@@ -168,6 +188,12 @@ class Room {
         if(this.state === GameStates.GAME_QUESTION) {
             if((this.timerEnd - new Date().getTime()) <= 0) {
                 this.TransitionQuestionMatch();
+            }
+        }
+
+        if(this.state === GameStates.GAME_QUESTIONMATCH) {
+            if((this.timerEnd - new Date().getTime()) <= 0) {
+                this.TransitionScore();
             }
         }
     }
