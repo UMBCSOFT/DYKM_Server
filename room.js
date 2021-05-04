@@ -103,6 +103,7 @@ class Room {
     }
 
     TransitionScore() {
+        this.state = GameStates.GAME_ROUND_END;
         this.broadcast("TRANSITION SCORE"); // The client will send their matches once they hear this
     }
 
