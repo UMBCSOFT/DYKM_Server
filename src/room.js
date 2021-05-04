@@ -147,6 +147,9 @@ class Room {
                     player.setNickname(nickname);
                     this.notifyEveryoneOfPlayerChange();
                 }
+                else if(message.startsWith("ID RECEIVED")) {
+                    clearInterval(player.intervalIdSender);
+                }
                 else if(message.startsWith("START GAME")) {
                     this.loadQuestions(()=>this.startGame());
                 }

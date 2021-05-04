@@ -81,12 +81,19 @@ wss.on('connection', (ws) => {
           console.log("Set host: " + player.nickname)
         }
         ws.send("WELCOME " + player.nickname);
-        ws.send("ID " + player.id);
+        player.intervalIdSender = setInterval((ws_ = ws, player_ = player) => {
+          console.log("Sending ID over");
+          ws_.send("ID " + player_.id);
+        }, 1000);
         connection.room = room;
         console.log(`Added player ${player.nickname} to room ${room.id}`);
       }
     }
-    else {
+
+    else if(message.startsWith('ID ')) {
+
+    }
+  else {
       throw new Error(`Haven't joined room a yet but received a non JOIN message "${message}"\nA join message must be sent before sending other websocket messages`)
     }
   });
