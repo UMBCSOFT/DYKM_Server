@@ -1,4 +1,4 @@
-const { removeItemOnce, updateRooms, app: server } = require("../index")
+const { removeItemOnce, updateRooms, app: server } = require("../src")
 
 test("Removes one element from an array", () => {
     expect(removeItemOnce([1, 1, 2, 1], 1)).toStrictEqual([1, 2, 1]);

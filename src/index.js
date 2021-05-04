@@ -5,7 +5,7 @@ const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
 const Player = require('./player');
-const Connection = require('./connection');
+const Connection = require('../connection');
 const cors = require('cors');
 app.use(cors());
 

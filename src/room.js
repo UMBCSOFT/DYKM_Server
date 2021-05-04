@@ -1,4 +1,4 @@
-const GameStates = require("./enums/e_game_states");
+const GameStates = require("../enums/e_game_states");
 const sqlite3 = require('sqlite3').verbose();
 
 const questionPhaseTimeSeconds = 60;
