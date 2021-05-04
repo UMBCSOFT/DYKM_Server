@@ -64,7 +64,6 @@ class Room {
     }
 
     startGame() {
-        this.numRounds -= 1;
         for(let player of this.players) {
             player.answer = undefined;
             player.doneMatching = false;
@@ -104,6 +103,7 @@ class Room {
 
     TransitionScore() {
         this.state = GameStates.GAME_ROUND_END;
+        this.numRounds -= 1;
         this.broadcast("TRANSITION SCORE"); // The client will send their matches once they hear this
     }
 
@@ -180,6 +180,11 @@ class Room {
                 else if (message.startsWith("REQUESTTIMER")) {
                     console.log("Sending timer data to " + player.nickname);
                     player.connection.ws.send("TIMER " + this.timerStart + ";" + this.timerEnd);
+                }
+                else if (message.startsWith("IS LAST ROUND")) {
+                    console.log("Response: IS LAST ROUND " + (this.numRounds === 0).toString().toUpperCase());
+                    player.connection.ws.send(
+                        "IS LAST ROUND " + (this.numRounds === 0).toString().toUpperCase());
                 }
                 else if (message.startsWith("DONEMATCHING ")) {
                     let rest = message.substr("DONEMATCHING ".length);
