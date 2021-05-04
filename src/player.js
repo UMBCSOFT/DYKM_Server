@@ -9,6 +9,7 @@ class Player {
         this.id = uuidv4();
         this.answer = undefined;
         this.doneMatching = false;
+        this.readyNextRound = false;
         this.matches = [];
     }
 

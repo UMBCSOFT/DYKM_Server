@@ -123,6 +123,20 @@ class Room {
         this.state = GameStates.GAME_QUESTIONMATCH;
     }
 
+    TransitionQuestion() {
+        for (let player of this.players) {
+            if(player.readyNextRound === false) {
+                return;
+            }
+        }
+
+        for (let player of this.players) {
+            player.readyNextRound = false;
+        }
+        this.broadcast("TRANSITION QUESTION");
+        this.state = GameStates.GAME_QUESTION;
+    }
+
     update(app, timePassed) {
         for(let player of this.players) {
             // Heartbeat if enough time has passed
@@ -185,6 +199,9 @@ class Room {
                     console.log("Response: ISLASTROUND " + (this.numRounds === 0).toString().toUpperCase());
                     player.connection.ws.send(
                         "ISLASTROUND " + (this.numRounds === 0).toString().toUpperCase());
+                }
+                else if (message === "READYNEXTROUND") {
+                    player.readyNextRound = true;
                 }
                 else if (message.startsWith("DONEMATCHING ")) {
                     let rest = message.substr("DONEMATCHING ".length);
