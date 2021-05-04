@@ -181,10 +181,10 @@ class Room {
                     console.log("Sending timer data to " + player.nickname);
                     player.connection.ws.send("TIMER " + this.timerStart + ";" + this.timerEnd);
                 }
-                else if (message.startsWith("IS LAST ROUND")) {
-                    console.log("Response: IS LAST ROUND " + (this.numRounds === 0).toString().toUpperCase());
+                else if (message.startsWith("ISLASTROUND")) {
+                    console.log("Response: ISLASTROUND " + (this.numRounds === 0).toString().toUpperCase());
                     player.connection.ws.send(
-                        "IS LAST ROUND " + (this.numRounds === 0).toString().toUpperCase());
+                        "ISLASTROUND " + (this.numRounds === 0).toString().toUpperCase());
                 }
                 else if (message.startsWith("DONEMATCHING ")) {
                     let rest = message.substr("DONEMATCHING ".length);
