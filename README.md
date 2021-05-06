@@ -19,7 +19,8 @@ Now we need to setup the run configuration
 1. In the top right click Add Configuration
 2. On the top left there will be a plus symbol. Click that.
 3. In the drop down select `Node.js`
-4. Be sure to include `index.js` in the `Node parameters` slot and optionally rename the configuration to whatever you want
+4. Be sure to include `src/index.js` in the `Node parameters` slot and optionally rename the configuration to whatever you want
+5. Change the working directory to `\DYNM_Server`, so for example I cloned into `C:\school project\` so my working directory is `C:\school project\DYNM_Server`
 5. Click apply
 
 Now the project can be run by pressing Shift+f10 or by clicking the play button in the top right (or the bug next to it for attaching a debugger)
