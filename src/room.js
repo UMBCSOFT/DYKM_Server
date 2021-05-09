@@ -217,8 +217,17 @@ class Room {
                 }
                 else if (message.startsWith("DONEMATCHING ")) {
                     let rest = message.substr("DONEMATCHING ".length);
-                    //TODO: split into match pairs
+
+                    let matchStrLists = rest.split(';');
+                    let matchList = [];
+                    for (let matchStr of matchStrLists) {
+                        matchList.push(matchStr.split(','));
+                    }
+                    player.matches = matchList;
+
                     console.log(player.nickname + " is done matching");
+                    console.log("Matches:");
+                    console.log(player.matches);
                     player.doneMatching = true;
                     this.checkIfEveryoneIsDoneMatchingAndTransitionIfTheyHave();
                 }
