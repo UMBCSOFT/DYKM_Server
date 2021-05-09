@@ -105,12 +105,16 @@ class Room {
                 player.answer = "No answer given";
             }
         }
-        let nameAnswerPairs = this.players.map(x=>x.nickname + ";" + x.answer + ";");
+        let nameAnswerPairList = [];
+        for (let p of this.players) {
+            nameAnswerPairList.push(`${p.nickname},${p.answer}`);
+        }
+        let nameAnswerPairStr = nameAnswerPairList.join(';');
         // nameAnswerPairs will be a string of tuples of nicknames and answers
-        // like "player1;player1answer;player2;player2answer"
-        // Then the client will split by ; and grab 2 at a time and make them into pairs again
+        // like "player1,player1answer;player2,player2answer"
+        // Then the client will split by ; and ,
         this.setupTimer(questionMatchTimeSeconds);
-        this.broadcast("TRANSITION QUESTIONMATCH " + nameAnswerPairs);
+        this.broadcast("TRANSITION QUESTIONMATCH " + nameAnswerPairStr);
         this.state = GameStates.GAME_QUESTIONMATCH;
     }
 
