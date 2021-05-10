@@ -125,6 +125,7 @@ class Room {
                 return;
             }
         }
+        this.ResetPlayersNumCorrectMatches();
         console.log("All players are ready for next round");
 
         for (let player of this.players) {
@@ -154,6 +155,26 @@ class Room {
         this.setupTimer(questionPhaseTimeSeconds);
         console.log("Setting timer start to " + this.timerStart + " and end to " + this.timerEnd + " which is " + ((this.timerEnd - this.timerStart)/1000.0) + " seconds")
         this.state = GameStates.GAME_QUESTION;
+    }
+
+    ResetPlayersNumCorrectMatches() {
+        for (let p of this.players) {
+            p.numCorrectMatches = 0;
+        }
+    }
+
+    SetPlayerScore(player) {
+        let roundScore = 0;
+        for (let m of player.matches) {
+            // m[0] is the correct author to the answer
+            // m[1] is the answer
+            // m[2] is the guessed author
+            // m[3] is the guess author's answer (in case we want it)
+            if (m[0] === m[2]) {
+                roundScore += 1;
+            }
+        }
+        player.score += roundScore;
     }
 
     update(app, timePassed) {
@@ -239,6 +260,7 @@ class Room {
                         matchList.push(matchStr.split(','));
                     }
                     player.matches = matchList;
+                    this.SetPlayerScore(player);
 
                     console.log(player.nickname + " is done matching");
                     console.log("Matches:");
