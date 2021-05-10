@@ -246,6 +246,11 @@ class Room {
                     player.doneMatching = true;
                     this.checkIfEveryoneIsDoneMatchingAndTransitionIfTheyHave();
                 }
+
+                else if (message.startsWith("GETPLAYERSCORES") {
+                    let playersScoresStr = "";
+
+                }
                 else {
                     console.log("Unhandled message " + message);
                 }
