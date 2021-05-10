@@ -16,6 +16,7 @@ class Room {
         this.questions = [];
         this.timerStart = 0;
         this.timerEnd = 0;
+        this.timeEmpty = 0;
     }
 
     getQuestion() {
@@ -94,7 +95,6 @@ class Room {
 
     TransitionScore() {
         this.state = GameStates.GAME_ROUND_END;
-        this.numRounds -= 1;
         this.broadcast("TRANSITION SCORE"); // The client will send their matches once they hear this
     }
 
@@ -130,8 +130,17 @@ class Room {
         for (let player of this.players) {
             player.readyNextRound = false;
         }
-
-        this.TransitionQuestion();
+        this.numRounds -= 1;
+        console.log("Number of rounds set to " + this.numRounds);
+        if (this.numRounds >= 1) {
+            console.log("Transitioning question")
+            this.TransitionQuestion();
+        }
+        else {
+            this.state = GameStates.GAME_END;
+            console.log("Transitioning end game")
+            this.broadcast("TRANSITION ENDGAME");
+        }
     }
 
     TransitionQuestion() {
@@ -148,6 +157,12 @@ class Room {
     }
 
     update(app, timePassed) {
+        if(this.players.length <= 0) {
+            this.timeEmpty += timePassed;
+        }
+        else {
+            this.timeEmpty = 0;
+        }
         for(let player of this.players) {
             // Heartbeat if enough time has passed
             player.connection.timeSinceLastHeartbeatSent += timePassed;

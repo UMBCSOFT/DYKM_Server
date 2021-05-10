@@ -111,8 +111,17 @@ app.get('/', function(req, res){
 });
 
 function updateRooms(app) {
+  let toRemove = [];
   for(let room of app.rooms.values()) {
     room.update(app, settings.updateInterval);
+    if(room.timeEmpty > 120 * 1000) {
+      toRemove.push(room);
+    }
+  }
+
+  for(let room of toRemove) {
+    console.log("Closing room " + room.id + " because it's been empty for " + room.timeEmpty/1000 + " seconds");
+    app.rooms.delete(room.id);
   }
 }
 
