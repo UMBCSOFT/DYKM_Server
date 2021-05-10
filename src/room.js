@@ -247,9 +247,14 @@ class Room {
                     this.checkIfEveryoneIsDoneMatchingAndTransitionIfTheyHave();
                 }
 
-                else if (message.startsWith("GETPLAYERSCORES") {
-                    let playersScoresStr = "";
-
+                else if (message.startsWith("GETPLAYERSCORES")) {
+                    let playerScoresStrList = [];
+                    for (let p of this.players) {
+                        playerScoresStrList.push(
+                            [p.nickname, p.score, p.numCorrectMatches].join(',')
+                        );
+                    }
+                   player.connection.ws.send("PLAYERSCORES " + playerScoresStrList.join(';'));
                 }
                 else {
                     console.log("Unhandled message " + message);

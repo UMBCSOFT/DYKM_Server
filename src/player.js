@@ -11,6 +11,8 @@ class Player {
         this.doneMatching = false;
         this.readyNextRound = false;
         this.matches = [];
+        this.numCorrectMatches = undefined;
+        this.score = undefined;
     }
 
     setNickname(n){
