@@ -164,17 +164,16 @@ class Room {
     }
 
     SetPlayerScore(player) {
-        let roundScore = 0;
         for (let m of player.matches) {
             // m[0] is the correct author to the answer
             // m[1] is the answer
             // m[2] is the guessed author
             // m[3] is the guess author's answer (in case we want it)
             if (m[0] === m[2]) {
-                roundScore += 1;
+                player.numCorrectMatches += 1;
             }
         }
-        player.score += roundScore;
+        player.score += player.numCorrectMatches;
     }
 
     update(app, timePassed) {
