@@ -81,10 +81,12 @@ wss.on('connection', (ws) => {
           console.log("Set host: " + player.nickname)
         }
         ws.send("WELCOME " + player.nickname);
-        player.intervalIdSender = setInterval((ws_ = ws, player_ = player) => {
+        let idSender = (ws_ = ws, player_ = player) => {
           console.log("Sending ID over");
           ws_.send("ID " + player_.id);
-        }, 1000);
+        };
+        player.intervalIdSender = setInterval(idSender, 1000);
+        idSender(); // Call immediately and then retry over and over
         connection.room = room;
         console.log(`Added player ${player.nickname} to room ${room.id}`);
       }
