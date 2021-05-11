@@ -4,6 +4,7 @@ const sqlite3 = require('sqlite3').verbose();
 const questionPhaseTimeSeconds = 60;
 const questionMatchTimeSeconds = 60;
 
+//TODO make "play again" functionality. Need to be able to reset room.
 class Room {
     constructor(id, host = "None", initialState = GameStates.GAME_READY) {
         this.id = id;
