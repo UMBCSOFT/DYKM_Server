@@ -96,7 +96,7 @@ wss.on('connection', (ws) => {
 });
 
 app.listen(settings.PORT, () => {
-  console.log(`Listening at http://localhost:${settings.PORT}`);
+  console.log(`Listening at port ${settings.PORT}`);
 });
 
 // This returns the test page on http://localhost so we can send test requests easily

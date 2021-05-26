@@ -6,6 +6,8 @@ module.exports = function(app){
     fs.readdirSync(__dirname).forEach(function(file) {
         if (file === "routes_index.js") return;
         const name = file.substr(0, file.indexOf('.'));
-        require('./' + name)(app);
+				if (name === '') return;
+				console.log("Name: " + name);
+        require("./" + name)(app);
     });
 }

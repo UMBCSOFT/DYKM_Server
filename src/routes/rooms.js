@@ -11,7 +11,7 @@ module.exports = function(app){
             return;
         }
         // Respond with what IP the client should connect to
-        res.send("ws://localhost:" + app.websocketPort); // TODO: Once released this needs to return the IP of our live server
+        res.send("ws://69.140.139.33:" + app.websocketPort); // TODO: Once released this needs to return the IP of our live server
     });
 
     app.post('/room/create', (req, res) => {
