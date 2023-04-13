@@ -1,13 +1,15 @@
 const GameStates = require("../enums/e_game_states");
 const sqlite3 = require('sqlite3').verbose();
+const { humanId } = require('human-id');
 
 const questionPhaseTimeSeconds = 60;
 const questionMatchTimeSeconds = 60;
 
 //TODO make "play again" functionality. Need to be able to reset room.
 class Room {
-    constructor(id, host = "None", initialState = GameStates.GAME_READY) {
-        this.id = id;
+    constructor(roomCode = undefined, host = "None", initialState = GameStates.GAME_READY) {
+        this.roomCode = roomCode ? roomCode : this.generateId();
+        console.log(this.generateId());
         this.players = [];
         this.host = host;
         this.state = initialState;
@@ -20,6 +22,10 @@ class Room {
         this.timeEmpty = 0;
     }
 
+    generateId() {
+        return humanId('-');
+    }
+
     getQuestion() {
         if(this.questions.length <= 0) {
             return "ERROR: Ran out of questions or failed to load question pack";
@@ -28,7 +34,11 @@ class Room {
     }
 
     loadQuestions(callbackWhenDone) {
-        if(this.validGamePacks.indexOf(this.gamePack) < 0) { console.error("Attempted to use load gamepack " + this.gamePack + " but this is not a valid gamepack"); return;} // Don't allow invalid game packs
+        // Don't allow invalid game packs
+        if(this.validGamePacks.indexOf(this.gamePack) < 0) {
+            console.error("Attempted to use load gamepack " + this.gamePack + " but this is not a valid gamepack");
+            return false;
+        }
 
         let filename = './database/' + this.gamePack + '.db';
         let db = new sqlite3.Database(filename, (err) => {
@@ -71,6 +81,8 @@ class Room {
     }
 
     notifyEveryoneOfPlayerChange() {
+        console.log("Players:", this.players)
+        console.log("Sending player update:\n", this.players.map(x=>x.nickname).join(";"));
         for(let player of this.players) {
             player.connection.ws.send("PLAYERUPDATE " + this.players.map(x=>x.nickname).join(";")); // TODO: People can put a semicolon in their name and break this
         }
@@ -189,8 +201,8 @@ class Room {
             player.connection.timeSinceLastHeartbeatSent += timePassed;
             if(player.connection.timeSinceLastHeartbeatSent > app.heartbeatInterval) {
                 player.connection.timeSinceLastHeartbeatSent -= app.heartbeatInterval;
-                player.connection.ws.send("PING");
-                console.log(`Pinging player ${player.nickname} in room ${this.id}`);
+                player.connection.ws.send("PING 🏓");
+                console.log(`🏓 PINGing  player ${player.nickname} in room ${this.roomCode}`);
             }
 
             // Handle messages from each player

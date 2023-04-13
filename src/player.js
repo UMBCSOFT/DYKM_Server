@@ -16,10 +16,12 @@ class Player {
     }
 
     setNickname(n){
-        if(n === "" || n === undefined) {
+        console.log("n:", n);
+        if(n === "" || n === "undefined" || !n) {
             n = "Player" + Math.floor(Math.random() * 1000000000); // not perfect but good enough
         }
-        this.nickname = n.replace(/;/g, ''); // We use semicolons for things so names can't have them
+        console.log("Changing player nick to", n);
+        this.nickname = n.replace(/;/g, ':'); // We use semicolons for things so names can't have them
     }
 }
 
