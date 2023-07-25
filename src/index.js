@@ -6,11 +6,10 @@ const path = require('path');
 const Player = require('./player');
 const Connection = require('../connection');
 const cors = require('cors');
-app.use(cors());
 
 app.heartbeatInterval = 15000; // 15 seconds
 app.websocketPort = settings.WebsocketPort;
-app.use(cors())
+app.use(cors());
 
 function removeItemOnce(arr, value) {
     let index = arr.indexOf(value);

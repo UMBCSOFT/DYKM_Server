@@ -1,6 +1,6 @@
 const settings = {
     PORT: 1337,
-    consoleTestPrints: false,
+    consoleTestPrints: true,
     WebsocketPort: 4567,
     updateInterval: 200
 };
