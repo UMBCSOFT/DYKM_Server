@@ -80,6 +80,13 @@ class Room {
         console.log("Starting game with " + this.numRounds + " rounds and question pack " + this.gamePack);
     }
 
+    playAgain() {
+        for(let player of this.players) {
+            player.resetForNewRound();
+        }
+        this.startGame();
+    }
+
     notifyEveryoneOfPlayerChange() {
         console.log("Players:", this.players)
         console.log("Sending player update:\n", this.players.map(x=>x.nickname).join(";"));
@@ -107,9 +114,14 @@ class Room {
     }
 
     TransitionScore() {
+        for(let player of this.players) {
+            player.readyNextRound = false;
+        }
         this.state = GameStates.GAME_ROUND_END;
         this.broadcast("TRANSITION SCORE"); // The client will send their matches once they hear this
     }
+
+
 
     TransitionQuestionMatch() {
         // If we got here that means everyone has an answer
@@ -289,6 +301,16 @@ class Room {
                         );
                     }
                    player.connection.ws.send("PLAYERSCORES " + playerScoresStrList.join(';'));
+                }
+                else if (message.startsWith("PLAYAGAIN")) {
+                    player.readyNextRound = true;
+                    for (let player of this.players) {
+                        if (player.readyNextRound === false) {
+                            return;
+                        }
+                    }
+                    console.log("All players ready to play again.");
+                    this.playAgain();
                 }
                 else {
                     console.log("Unhandled message " + message);

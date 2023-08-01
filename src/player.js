@@ -23,6 +23,14 @@ class Player {
         console.log("Changing player nick to", n);
         this.nickname = n.replace(/;/g, ':'); // We use semicolons for things so names can't have them
     }
+
+    resetForNewRound() {
+        this.answer = undefined;
+        this.doneMatching = false;
+        this.matches = [];
+        this.numCorrectMatches = 0;
+        this.score = 0;
+    }
 }
 
 module.exports = Player;
