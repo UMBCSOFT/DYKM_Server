@@ -9,7 +9,6 @@ module.exports = function(app){
     app.use(bodyParser.urlencoded({ extended: true  }));
     app.use(bodyParser.json());
 
-    console.log("YOOO");
     app.get('/room/get/:id', (req, res) => {
         const room = app.rooms.get(req.params.id);
         if(room === undefined) {
