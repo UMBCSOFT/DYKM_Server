@@ -1,6 +1,7 @@
 const GameStates = require("../enums/e_game_states");
 const sqlite3 = require('sqlite3').verbose();
 const { humanId } = require('human-id');
+const { sendPlayerMessage } = require('./sendPlayerMessage');
 
 const questionPhaseTimeSeconds = 60;
 const questionMatchTimeSeconds = 60;
@@ -64,9 +65,9 @@ class Room {
 
     }
 
-    broadcast(broadcastMessage) {
+    broadcast(type, data = undefined) {
         for(let p of this.players) {
-            p.connection.ws.send(broadcastMessage);
+            sendPlayerMessage(p, type, data);
         }
     }
 
@@ -89,10 +90,15 @@ class Room {
 
     notifyEveryoneOfPlayerChange() {
         console.log("Players:", this.players)
-        console.log("Sending player update:\n", this.players.map(x=>x.nickname).join(";"));
-        for(let player of this.players) {
-            player.connection.ws.send("PLAYERUPDATE " + this.players.map(x=>x.nickname).join(";")); // TODO: People can put a semicolon in their name and break this
+        const playerIdNickname = [];
+        for (let p of this.players) {
+            playerIdNickname.push({
+                "id": p.id,
+                "nickname": p.nickname
+            });
         }
+        console.log("Sending player update:\n", playerIdNickname);
+        this.broadcast("PLAYERUPDATE", playerIdNickname);
     }
 
     checkIfEveryoneAnsweredAndTransitionIfTheyHave() { // Long but descriptive :shrug:
@@ -130,16 +136,18 @@ class Room {
                 player.answer = "No answer given";
             }
         }
-        let nameAnswerPairList = [];
+        let answersData = [];
         for (let p of this.players) {
-            nameAnswerPairList.push(`${p.nickname},${p.answer}`);
+            answersData.push({
+                "nickname": p.nickname,
+                "answer": p.answer
+            });
         }
-        let nameAnswerPairStr = nameAnswerPairList.join(';');
         // nameAnswerPairs will be a string of tuples of nicknames and answers
         // like "player1,player1answer;player2,player2answer"
         // Then the client will split by ; and ,
-        this.setupTimer(questionMatchTimeSeconds);
-        this.broadcast("TRANSITION QUESTIONMATCH " + nameAnswerPairStr);
+        this.setupTimer(questionMatchTimeSeconds*this.players.length);
+        this.broadcast("TRANSITION QUESTIONMATCH", answersData);
         this.state = GameStates.GAME_QUESTIONMATCH;
     }
 
@@ -176,7 +184,7 @@ class Room {
             player.matches = [];
         }
         let question = this.getQuestion();
-        this.broadcast("TRANSITION QUESTION " + question);
+        this.broadcast("TRANSITION QUESTION", question);
         this.setupTimer(questionPhaseTimeSeconds);
         console.log("Setting timer start to " + this.timerStart + " and end to " + this.timerEnd + " which is " + ((this.timerEnd - this.timerStart)/1000.0) + " seconds")
         this.state = GameStates.GAME_QUESTION;
@@ -188,7 +196,7 @@ class Room {
         }
     }
 
-    SetPlayerScore(player) {
+    UpdatePlayerScore(player) {
         for (let m of player.matches) {
             // m[0] is the correct author to the answer
             // m[1] is the answer
@@ -223,27 +231,26 @@ class Room {
                 const message = player.connection.messages.shift(); // Pull the oldest message off the message queue
                 console.log("Received message: ".concat(message));
 
+                const jsonData = JSON.parse(message);
+
                 // Handle game messages here
-                //e.g. if(message.startsWith("..."))
-                if(message.startsWith("CHANGENICK")) {
+                //e.g. if(jsonData["type"] === "...")
+                if(jsonData["type"] === "CHANGENICK") {
                     const nickname = message.substr("CHANGENICK ".length);
                     console.log("Changing nickname of player " + player.nickname + " to " + nickname)
                     player.setNickname(nickname);
                     this.notifyEveryoneOfPlayerChange();
                 }
-                else if(message.startsWith("ID RECEIVED")) {
-                    clearInterval(player.intervalIdSender);
-                }
-                else if(message.startsWith("START GAME")) {
+                else if(jsonData["type"] === "STARTGAME") {
                     this.loadQuestions(()=>this.startGame());
                 }
-                else if(message.startsWith("SETNUMROUNDS ")) {
-                    let rest = message.substr("SETNUMROUNDS ".length);
+                else if(jsonData["type"] === "SETNUMROUNDS") {
+                    let rest = jsonData["data"]
                     this.numRounds = parseInt(rest);
                     console.log("Setting number of rounds to " + rest);
                 }
-                else if(message.startsWith("SETGAMEPACK ")) {
-                    let rest = message.substr("SETGAMEPACK ".length);
+                else if(jsonData["type"] === "SETGAMEPACK") {
+                    let rest = jsonData["data"];
                     if(this.validGamePacks.indexOf(rest) >= 0) {
                         console.log("Setting game pack to " + rest);
                         this.gamePack = rest;
@@ -252,8 +259,8 @@ class Room {
                         console.log("Invalid game pack name " + rest);
                     }
                 }
-                else if (message.startsWith("ANSWER ")) {
-                    let rest = message.substr("ANSWER ".length);
+                else if (jsonData["type"] === "ANSWER") {
+                    let rest = jsonData["data"];
                     if(rest === "null" || rest === "undefined") {
                         rest = "No answer given";
                     }
@@ -261,30 +268,22 @@ class Room {
                     console.log("Setting player " + player.nickname + "'s answer to " + player.answer);
                     this.checkIfEveryoneAnsweredAndTransitionIfTheyHave();
                 }
-                else if (message.startsWith("REQUESTTIMER")) {
+                else if (jsonData["type"] === "REQUESTTIMER") {
                     console.log("Sending timer data to " + player.nickname);
-                    player.connection.ws.send("TIMER " + this.timerStart + ";" + this.timerEnd);
+                    sendPlayerMessage(player, "TIMER", [this.timerStart, this.timerEnd])
                 }
-                else if (message.startsWith("ISLASTROUND")) {
-                    console.log("Response: ISLASTROUND " + (this.numRounds === 0).toString().toUpperCase());
-                    player.connection.ws.send(
-                        "ISLASTROUND " + (this.numRounds === 0).toString().toUpperCase());
+                else if (jsonData["type"] === "ISLASTROUND") {
+                    console.log("Response: ", this.numRounds === 0);
+                    sendPlayerMessage(player, "ISLASTROUND", (this.numRounds === 0))
                 }
-                else if (message.startsWith("READYNEXTROUND")) {
+                else if (jsonData["type"] === "READYNEXTROUND") {
                     console.log(player.nickname + " is ready for next round");
                     player.readyNextRound = true;
                     this.TransitionQuestionFromScores();
                 }
-                else if (message.startsWith("DONEMATCHING ")) {
-                    let rest = message.substr("DONEMATCHING ".length);
-
-                    let matchStrLists = rest.split(';');
-                    let matchList = [];
-                    for (let matchStr of matchStrLists) {
-                        matchList.push(matchStr.split(','));
-                    }
-                    player.matches = matchList;
-                    this.SetPlayerScore(player);
+                else if (jsonData["type"] === "DONEMATCHING") {
+                    player.matches = jsonData["data"];
+                    this.UpdatePlayerScore(player);
 
                     console.log(player.nickname + " is done matching");
                     console.log("Matches:");
@@ -293,16 +292,19 @@ class Room {
                     this.checkIfEveryoneIsDoneMatchingAndTransitionIfTheyHave();
                 }
 
-                else if (message.startsWith("GETPLAYERSCORES")) {
-                    let playerScoresStrList = [];
+                else if (jsonData["type"] === "GETPLAYERSCORES") {
+                    let playerScores = [];
                     for (let p of this.players) {
-                        playerScoresStrList.push(
-                            [p.nickname, p.score, p.numCorrectMatches].join(',')
-                        );
+                        playerScores.push({
+                            "id": p.id,
+                            "nickname": p.nickname,
+                            "score": p.score,
+                            "numCorrectMatches": p.numCorrectMatches
+                        });
                     }
-                   player.connection.ws.send("PLAYERSCORES " + playerScoresStrList.join(';'));
+                    sendPlayerMessage(player, "PLAYERSCORES", playerScores);
                 }
-                else if (message.startsWith("PLAYAGAIN")) {
+                else if (jsonData["type"] === "PLAYAGAIN") {
                     player.readyNextRound = true;
                     for (let player of this.players) {
                         if (player.readyNextRound === false) {

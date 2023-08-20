@@ -6,6 +6,7 @@ const path = require('path');
 const Player = require('./player');
 const Connection = require('../connection');
 const cors = require('cors');
+const { sendPlayerMessage } = require('./sendPlayerMessage');
 
 app.heartbeatInterval = 15000; // 15 seconds
 app.websocketPort = settings.WebsocketPort;
@@ -31,6 +32,7 @@ app.rooms = new Map();
 // We need this because there's no way to connect to a single room without sending that message of the websocket, which means
 // there is an intermediate state where you're connected to the websocket server but haven't joined a room yet
 let connectedButNotInRoom = [];
+
 
 wss.on('connection', (ws) => {
     let connection = new Connection(ws);
@@ -62,14 +64,15 @@ wss.on('connection', (ws) => {
             return;
         }
 
+        let jsonData = JSON.parse(message)
+
         if(connection.joinedRoom){
             // Push onto queue for the room update function to read later
             connection.messages.push(message);
         }
         // Since we're not in a room yet we handle JOIN here, but non JOIN messages should be handled in Room.update()
-        else if(message.startsWith('JOIN ')) {
-            console.log("Received " + message);
-            let roomCode = message.substr("JOIN ".length);
+        else if(jsonData["type"] === "JOIN") {
+            let roomCode = jsonData["data"]
             let room = app.rooms.get(roomCode);
             if(room !== undefined) {
                 // Remove connection from the unconnected state, and add it as a new player to the room
@@ -83,25 +86,23 @@ wss.on('connection', (ws) => {
                     room.host = player;
                     console.log("Set host: " + player.nickname)
                 }
-                ws.send("WELCOME " + player.id);
+                sendPlayerMessage(player, "WELCOME", player.id);
                 connection.room = room;
                 console.log(`Added player ${player.nickname} to room ${room.roomCode}`);
             }
         }
 
         // Reconnect player to room
-        else if (message.startsWith('REJOIN ')) {
-            console.log("Received " + message);
-            let messageArray = message.split(' ');
-            let roomCode = messageArray[1];
-            let playerId = messageArray[2];
+        else if (jsonData["type"] === "REJOIN") {
+            let roomCode = jsonData["data"]["roomCode"];
+            let playerId = jsonData["data"]["playerId"];
             let room = app.rooms.get(roomCode);
             if(room !== undefined) {
                 //
                 for (let p of room.players) {
                     if (p.id === playerId) {
                         p.connection = connection;
-                        ws.send("REJOINED " + playerId);
+                        sendPlayerMessage(p, "REJOINED", playerId);
                     }
                 }
                 let player = new Player("Player" + (room.players.length + 1));
@@ -113,14 +114,10 @@ wss.on('connection', (ws) => {
                     room.host = player;
                     console.log("Set host: " + player.nickname)
                 }
-                ws.send("WELCOME " + player.id);
                 connection.room = room;
+                sendPlayerMessage(player, "WELCOME", player.id);
                 console.log(`Added player ${player.nickname} to room ${room.roomCode}`);
             }
-
-        }
-
-        else if(message.startsWith('ID ')) {
 
         }
         else {

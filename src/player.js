@@ -4,7 +4,6 @@ class Player {
     constructor(nickname, isHost=false) {
         this.setNickname(nickname);
         this.isHost = isHost
-        this.intervalIdSender = undefined;
         this.connection = undefined; // Connection will be set once JOIN message is recieved
         this.id = uuidv4();
         this.answer = undefined;
