@@ -6,7 +6,6 @@ const { sendPlayerMessage } = require('./sendPlayerMessage');
 const questionPhaseTimeSeconds = 60;
 const questionMatchTimeSeconds = 60;
 
-//TODO make "play again" functionality. Need to be able to reset room.
 class Room {
     constructor(roomCode = undefined, host = "None", initialState = GameStates.GAME_READY) {
         this.roomCode = roomCode ? roomCode : this.generateId();
@@ -77,7 +76,7 @@ class Room {
     }
 
     startGame() {
-        this.TransitionQuestion();
+        this.transitionQuestion();
         console.log("Starting game with " + this.numRounds + " rounds and question pack " + this.gamePack);
     }
 
@@ -107,7 +106,7 @@ class Room {
                 return;
         }
         // If we got here that means everyone has an answer
-        this.TransitionQuestionMatch();
+        this.transitionQuestionMatch();
     }
 
     checkIfEveryoneIsDoneMatchingAndTransitionIfTheyHave() {
@@ -116,10 +115,10 @@ class Room {
                 return;
         }
         // If we got here that means everyone has matched
-        this.TransitionScore();
+        this.transitionScore();
     }
 
-    TransitionScore() {
+    transitionScore() {
         for(let player of this.players) {
             player.readyNextRound = false;
         }
@@ -129,7 +128,7 @@ class Room {
 
 
 
-    TransitionQuestionMatch() {
+    transitionQuestionMatch() {
         // If we got here that means everyone has an answer
         for (let player of this.players) {
             if(player.answer === undefined) {
@@ -151,14 +150,14 @@ class Room {
         this.state = GameStates.GAME_QUESTIONMATCH;
     }
 
-    TransitionQuestionFromScores() {
+    transitionQuestionFromScores() {
         for (let player of this.players) {
             if(player.readyNextRound === false) {
                 console.log(player.nickname + "was not ready for the next round");
                 return;
             }
         }
-        this.ResetPlayersNumCorrectMatches();
+        this.resetPlayersNumCorrectMatches();
         console.log("All players are ready for next round");
 
         for (let player of this.players) {
@@ -168,7 +167,7 @@ class Room {
         console.log("Number of rounds set to " + this.numRounds);
         if (this.numRounds >= 1) {
             console.log("Transitioning question")
-            this.TransitionQuestion();
+            this.transitionQuestion();
         }
         else {
             this.state = GameStates.GAME_END;
@@ -177,7 +176,7 @@ class Room {
         }
     }
 
-    TransitionQuestion() {
+    transitionQuestion() {
         for(let player of this.players) {
             player.answer = undefined;
             player.doneMatching = false;
@@ -190,13 +189,13 @@ class Room {
         this.state = GameStates.GAME_QUESTION;
     }
 
-    ResetPlayersNumCorrectMatches() {
+    resetPlayersNumCorrectMatches() {
         for (let p of this.players) {
             p.numCorrectMatches = 0;
         }
     }
 
-    UpdatePlayerScore(player) {
+    updatePlayerScore(player) {
         for (let m of player.matches) {
             // m[0] is the correct author to the answer
             // m[1] is the answer
@@ -279,11 +278,11 @@ class Room {
                 else if (jsonData["type"] === "READYNEXTROUND") {
                     console.log(player.nickname + " is ready for next round");
                     player.readyNextRound = true;
-                    this.TransitionQuestionFromScores();
+                    this.transitionQuestionFromScores();
                 }
                 else if (jsonData["type"] === "DONEMATCHING") {
                     player.matches = jsonData["data"];
-                    this.UpdatePlayerScore(player);
+                    this.updatePlayerScore(player);
 
                     console.log(player.nickname + " is done matching");
                     console.log("Matches:");
@@ -322,13 +321,13 @@ class Room {
 
         if(this.state === GameStates.GAME_QUESTION) {
             if((this.timerEnd - new Date().getTime()) <= 0) {
-                this.TransitionQuestionMatch();
+                this.transitionQuestionMatch();
             }
         }
 
         if(this.state === GameStates.GAME_QUESTIONMATCH) {
             if((this.timerEnd - new Date().getTime()) <= 0) {
-                this.TransitionScore();
+                this.transitionScore();
             }
         }
     }
